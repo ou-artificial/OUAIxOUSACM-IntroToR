@@ -1,5 +1,5 @@
 ---
-title: "DSA5103 - HW8"
+title: "Brief Intro To Clustering in R (And Also R Markdown)"
 author: "Khoi Trinh"
 date: "`r Sys.Date()`"
 output: pdf_document
@@ -9,7 +9,25 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Clustering Homework
+Before working with R markdown, we need a few packages
+```{r rmd}
+# The rmarkdown package
+#install.packages('rmarkdown')
+```
+
+If you want to generate pdf files, you will need to install LaTeX
+
+If you don't plan on using LaTeX anywhere outside of R markdown,
+I suggest TinyTex
+
+```{r latex}
+#install.packages('tinytex')
+#tinytex::install_tinytex()
+```
+
+Note that you can and should run these above commands in the RStudio console
+
+# Let's Explore Clustering
 
 ```{r libraries, warning=FALSE, message=FALSE, echo=FALSE}
 library(cluster)
@@ -19,13 +37,13 @@ library(dplyr)
 library(kmed)
 ```
 
-## Task 1
+## First, we need some data
 
-### Item i:
+### Data description
 
 The data I chose is a dataset of tracks from Spotify. There are 586,672 observations; each of with has 20 variables. These include 12 numeric variables, and 7 factor variables. 
 
-### Item ii:
+### Data source
 The data I chose came from this kaggle URL:
 [Spotify Dataset](https://www.kaggle.com/datasets/lehaknarnauli/spotify-datasets?select=tracks.csv)
 
@@ -55,52 +73,16 @@ numericData = spotify %>% #Add data
 numericData <- head(numericData, 500) # gets only 500 observations
 ```
 
-## Task 2:
+## Time To Create Some Clusters
 
-### K - Medoid Clustering
+### One last data processing step
 
-For K-medoid clustering, a WSS plot is created, in order to determine the optimal k value.
+Scale the data, and use that to create our clusters.
 
 ```{r scale, echo = FALSE}
 clusterData <- scale(numericData)
 ```
 
-```{r estimate k function, echo = FALSE}
-# fviz_nbclust(clusterData, pam, method = "wss")
-wssplot <- function(data, nc=15){                    
-
-  par(mfrow=c(1,2))
-  
-  wss <- NULL  
-  pctExp <-NULL
-  
-  for (k in 1:nc)
-  {
-     kclus <- kmeans(data, centers=k)
-     wss[k] <- kclus$tot.withinss      #store the total within SSE for given k
-     pctExp[k] <- 1-wss[k]/kclus$totss
-  }
-  
-  plot(1:nc, wss, type="b", xlab="Number of Clusters",
-       ylab="Within groups sum of squares")
-
-  plot(1:nc, pctExp, type="b", xlab="Number of Clusters",
-       ylab="Pct Explained")
-  
-  par(mfrow=c(1,1))
-}
-
-```
-
-```{r use function, echo = FALSE}
-wssplot(clusterData, nc=15)
-```
-
-From the plots, there seems to be a "bend" at k = 3, so that will be the value of k. For this cluster method, the pam() function from the cluster package is used
-
-```{r k medoid, echo=FALSE}
-kmed <- pam(clusterData, k = 3)
-```
 ### K means
 
 K means clustering are done here with k = 2. This value of k was suggested using the NbClust() method from the `NbClust` package. One of the lines in the results states "According to the majority rule, the best number of clusters is  2"
@@ -115,61 +97,24 @@ For this clustering method, the kmeans() function from the stats package is used
 kmean <- kmeans(clusterData,2, nstart=10)
 ```
 
-### Hierarchical
-
-For Hierarchical clustering, first, daisy() function from the cluster package was used to compute the distance for all the numeric data; then a dendogram was produced, the method is "ward.D"
-
-The rect.hclust() method was used with k = 3 to highlight the clusters.
-
-```{r hierarchical, echo=FALSE}
-d<-daisy(clusterData,stand=T)
-
-hclus<-hclust(d,method="ward.D")  # notice how balanced the clusters are
-plot(hclus, hang = -1, cex = 0.6)
-rect.hclust(hclus, 2, border = 2:5)
-```
-
 ### Clusters Analysis
 
-First, let's see the size of the clusters for k means and k medoid
+First, let's see the size of the clusters
 
 ```{r size, echo=FALSE}
 kmeansize <- kmean$size
-
-kmedoidsize <- kmed$clusinfo
 ```
 
-For k means, we have 2 clusters, with size 229 and 271. For k medoids, there are 3 clusters with size 81, 272, 147.
+We have 2 clusters, with size 229 and 271.
 
-Visually, the k medoids looks like so
-
-```{r k medoid visual, echo=FALSE}
-fviz_cluster(kmed, data = clusterData, geom = "point", ellipse.type = "convex", 
-             ggtheme = theme_bw())
-```
-
-While, the k means give this plot
+Visually, the clusters look like so
 
 ```{r k means visual, echo=FALSE}
 fviz_cluster(kmean, data = clusterData, geom = "point", ellipse.type = "convex", 
              ggtheme = theme_bw())
 ```
 
-The k medoid cluster plot have some overlap between cluster 1 and 3; while the k means plot produces 2 separate clusters.
-
-The 2 cluster plot share some similarity. Both created cluster 2 with some similar data points. In the k means cluster plot, cluster 2 has some outliers, while cluster 2 in the k medoid plot looks more uniform. 
-
-Let's reduce the k value for k medoid to 2:
-
-```{r lowerkmed, echo = FALSE}
-kmed2 <- pam(clusterData, k = 2)
-fviz_cluster(kmed2, data = clusterData, geom = "point", ellipse.type = "convex", 
-             ggtheme = theme_bw())
-kmedoidsize2 <- kmed2$clusinfo
-```
-There is less overlap with k = 2 for k medoids, so k = 2 is the more optimal value for this method. However, the k means method produce 2 separate clusters, with no overlapping, so it is a bit more optimal than k medoid, with the same k value of 2. With this k value, the sizes of the clusters are 213 and 287.
-
-### K Mean Cluster Intepretation
+### Cluster Intepretation
 
 ```{r k mean clusters, echo=FALSE}
 kmeaninfo <- data.frame(kmean$centers, kmean$size)
