@@ -41,36 +41,23 @@ library(kmed)
 
 ### Data description
 
-The data I chose is a dataset of tracks from Spotify. There are 586,672 observations; each of with has 20 variables. These include 12 numeric variables, and 7 factor variables. 
-
-### Data source
-The data I chose came from this kaggle URL:
-[Spotify Dataset](https://www.kaggle.com/datasets/lehaknarnauli/spotify-datasets?select=tracks.csv)
+The data I chose is my own Spotify streaming history for the past year.
 
 ### Misc data processing:
 
-The data included some variables that are binary, but were recorded as numeric. These included "explicit" which is a flag if a song has explicit lyrics, and "mode" which is a flag for major mode (1) or minor mode (0); both of these were converted to factor.
-
-Additionally, there is the "key" factor which has values from 0 to 11; coinciding to the 12 keys in Western music: A, A#, B, C, C#, D, D#, E, F, G, G#. While this is not a binary feature, it should not be considered numeric, and will also be converted to factor.
-
-While most of numeric data ranges from 0 to 1; tempo and length were not, so scaling was done to ensure the data is normalized.
-
-Fortunately, the data does not have any missing values, so no imputations were needed. Clustering and the subsequent analysis can be performed.
+Read in the data
 
 ```{r load data}
-spotify = read.csv("tracks.csv")
-
-spotify$explicit <-as.factor(spotify$explicit)
-spotify$mode <-as.factor(spotify$mode)
-spotify$key <-as.factor(spotify$key)
+spotify = read.csv("final.csv")
 ```
 
-The data had almost 600,000 observations, out of those, the top 500 observations will be chosen for the purpose of this experiment.
+The data had almost 60,000 observations, out of those, only the numeric data will be considered.
 
 ```{r convert to factor}
 numericData = spotify %>% #Add data
   dplyr::select(where(is.numeric)) #finds where is.numeric is true
-numericData <- head(numericData, 500) # gets only 500 observations
+#numericData <- head(numericData, 10000) # gets only 10000 observations
+numericData <- subset(numericData, select=-c(1,2,5,7,14,15))
 ```
 
 ## Time To Create Some Clusters
@@ -85,13 +72,7 @@ clusterData <- scale(numericData)
 
 ### K means
 
-K means clustering are done here with k = 2. This value of k was suggested using the NbClust() method from the `NbClust` package. One of the lines in the results states "According to the majority rule, the best number of clusters is  2"
-
-```{r k mean k value}
-NbClust(clusterData,method="kmeans")
-```
-
-For this clustering method, the kmeans() function from the stats package is used.
+For this clustering method, the kmeans() function from the stats package is used. Let's start with 2 clusters. Normally, there are ways to determine an optimal number of clusters, but for the sake of simplicity, let's stick to 2, maybe we can change it later.
 
 ```{r k mean}
 kmean <- kmeans(clusterData,2, nstart=10)
@@ -103,9 +84,10 @@ First, let's see the size of the clusters
 
 ```{r size}
 kmeansize <- kmean$size
+kmeansize
 ```
 
-We have 2 clusters, with size 229 and 271.
+We have 2 clusters, with size 36053 and 20157. 
 
 Visually, the clusters look like so
 
@@ -121,6 +103,38 @@ kmeaninfo <- data.frame(kmean$centers, kmean$size)
 kmeaninfo
 ```
 
-From the above data frame, cluster 1 represent songs that have high loudness, so they were mixed louder than average, as well as both high acousticness and instrumentalness; and low in valence. This group can be considered as "Loud Angry Songs".
+Here are the explanation of the traits.
 
-Cluster 2 have songs that are high in speechiness, danceability, and valence. This group can be considered as "Happy Songs To Dance To".
+acousticness — how acoustic
+
+danceability — self-explanatory
+
+energy — how 'fast, loud an noisy'
+
+instrumentalness — the less vocals, the higher
+
+liveness — whether there is audience in the recording
+
+loudness — self-explanatory
+
+speechiness — the more spoken words, the higher
+
+valence — whether the track sounds happy or sad
+
+tempo — the bpm
+
+Let's increase the number of clusters, to see if we get any more clear separation.
+
+```{r k mean redux}
+kmean2 <- kmeans(clusterData,3, nstart=10)
+```
+
+```{r k means visual redux}
+fviz_cluster(kmean2, data = clusterData, geom = "point", ellipse.type = "convex", 
+             ggtheme = theme_bw())
+```
+
+```{r k mean clusters redux}
+kmeaninfo2 <- data.frame(kmean2$centers, kmean2$size)
+kmeaninfo2
+```
