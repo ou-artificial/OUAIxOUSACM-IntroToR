@@ -29,7 +29,7 @@ Note that you can and should run these above commands in the RStudio console
 
 # Let's Explore Clustering
 
-```{r libraries, warning=FALSE, message=FALSE, echo=FALSE}
+```{r libraries, warning=FALSE, message=FALSE}
 library(cluster)
 library(NbClust)
 library(factoextra)
@@ -57,7 +57,7 @@ While most of numeric data ranges from 0 to 1; tempo and length were not, so sca
 
 Fortunately, the data does not have any missing values, so no imputations were needed. Clustering and the subsequent analysis can be performed.
 
-```{r load data, echo = FALSE}
+```{r load data}
 spotify = read.csv("tracks.csv")
 
 spotify$explicit <-as.factor(spotify$explicit)
@@ -67,7 +67,7 @@ spotify$key <-as.factor(spotify$key)
 
 The data had almost 600,000 observations, out of those, the top 500 observations will be chosen for the purpose of this experiment.
 
-```{r convert to factor, echo = FALSE}
+```{r convert to factor}
 numericData = spotify %>% #Add data
   dplyr::select(where(is.numeric)) #finds where is.numeric is true
 numericData <- head(numericData, 500) # gets only 500 observations
@@ -79,7 +79,7 @@ numericData <- head(numericData, 500) # gets only 500 observations
 
 Scale the data, and use that to create our clusters.
 
-```{r scale, echo = FALSE}
+```{r scale}
 clusterData <- scale(numericData)
 ```
 
@@ -87,13 +87,13 @@ clusterData <- scale(numericData)
 
 K means clustering are done here with k = 2. This value of k was suggested using the NbClust() method from the `NbClust` package. One of the lines in the results states "According to the majority rule, the best number of clusters is  2"
 
-```{r k mean k value, eval=FALSE, results= 'hide', echo=FALSE}
+```{r k mean k value}
 NbClust(clusterData,method="kmeans")
 ```
 
 For this clustering method, the kmeans() function from the stats package is used.
 
-```{r k mean, echo=FALSE}
+```{r k mean}
 kmean <- kmeans(clusterData,2, nstart=10)
 ```
 
@@ -101,7 +101,7 @@ kmean <- kmeans(clusterData,2, nstart=10)
 
 First, let's see the size of the clusters
 
-```{r size, echo=FALSE}
+```{r size}
 kmeansize <- kmean$size
 ```
 
@@ -109,14 +109,14 @@ We have 2 clusters, with size 229 and 271.
 
 Visually, the clusters look like so
 
-```{r k means visual, echo=FALSE}
+```{r k means visual}
 fviz_cluster(kmean, data = clusterData, geom = "point", ellipse.type = "convex", 
              ggtheme = theme_bw())
 ```
 
 ### Cluster Intepretation
 
-```{r k mean clusters, echo=FALSE}
+```{r k mean clusters}
 kmeaninfo <- data.frame(kmean$centers, kmean$size)
 kmeaninfo
 ```
