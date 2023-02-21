@@ -1,0 +1,181 @@
+---
+title: "DSA5103 - HW8"
+author: "Khoi Trinh"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Clustering Homework
+
+```{r libraries, warning=FALSE, message=FALSE, echo=FALSE}
+library(cluster)
+library(NbClust)
+library(factoextra)
+library(dplyr)
+library(kmed)
+```
+
+## Task 1
+
+### Item i:
+
+The data I chose is a dataset of tracks from Spotify. There are 586,672 observations; each of with has 20 variables. These include 12 numeric variables, and 7 factor variables. 
+
+### Item ii:
+The data I chose came from this kaggle URL:
+[Spotify Dataset](https://www.kaggle.com/datasets/lehaknarnauli/spotify-datasets?select=tracks.csv)
+
+### Misc data processing:
+
+The data included some variables that are binary, but were recorded as numeric. These included "explicit" which is a flag if a song has explicit lyrics, and "mode" which is a flag for major mode (1) or minor mode (0); both of these were converted to factor.
+
+Additionally, there is the "key" factor which has values from 0 to 11; coinciding to the 12 keys in Western music: A, A#, B, C, C#, D, D#, E, F, G, G#. While this is not a binary feature, it should not be considered numeric, and will also be converted to factor.
+
+While most of numeric data ranges from 0 to 1; tempo and length were not, so scaling was done to ensure the data is normalized.
+
+Fortunately, the data does not have any missing values, so no imputations were needed. Clustering and the subsequent analysis can be performed.
+
+```{r load data, echo = FALSE}
+spotify = read.csv("tracks.csv")
+
+spotify$explicit <-as.factor(spotify$explicit)
+spotify$mode <-as.factor(spotify$mode)
+spotify$key <-as.factor(spotify$key)
+```
+
+The data had almost 600,000 observations, out of those, the top 500 observations will be chosen for the purpose of this experiment.
+
+```{r convert to factor, echo = FALSE}
+numericData = spotify %>% #Add data
+  dplyr::select(where(is.numeric)) #finds where is.numeric is true
+numericData <- head(numericData, 500) # gets only 500 observations
+```
+
+## Task 2:
+
+### K - Medoid Clustering
+
+For K-medoid clustering, a WSS plot is created, in order to determine the optimal k value.
+
+```{r scale, echo = FALSE}
+clusterData <- scale(numericData)
+```
+
+```{r estimate k function, echo = FALSE}
+# fviz_nbclust(clusterData, pam, method = "wss")
+wssplot <- function(data, nc=15){                    
+
+  par(mfrow=c(1,2))
+  
+  wss <- NULL  
+  pctExp <-NULL
+  
+  for (k in 1:nc)
+  {
+     kclus <- kmeans(data, centers=k)
+     wss[k] <- kclus$tot.withinss      #store the total within SSE for given k
+     pctExp[k] <- 1-wss[k]/kclus$totss
+  }
+  
+  plot(1:nc, wss, type="b", xlab="Number of Clusters",
+       ylab="Within groups sum of squares")
+
+  plot(1:nc, pctExp, type="b", xlab="Number of Clusters",
+       ylab="Pct Explained")
+  
+  par(mfrow=c(1,1))
+}
+
+```
+
+```{r use function, echo = FALSE}
+wssplot(clusterData, nc=15)
+```
+
+From the plots, there seems to be a "bend" at k = 3, so that will be the value of k. For this cluster method, the pam() function from the cluster package is used
+
+```{r k medoid, echo=FALSE}
+kmed <- pam(clusterData, k = 3)
+```
+### K means
+
+K means clustering are done here with k = 2. This value of k was suggested using the NbClust() method from the `NbClust` package. One of the lines in the results states "According to the majority rule, the best number of clusters is  2"
+
+```{r k mean k value, eval=FALSE, results= 'hide', echo=FALSE}
+NbClust(clusterData,method="kmeans")
+```
+
+For this clustering method, the kmeans() function from the stats package is used.
+
+```{r k mean, echo=FALSE}
+kmean <- kmeans(clusterData,2, nstart=10)
+```
+
+### Hierarchical
+
+For Hierarchical clustering, first, daisy() function from the cluster package was used to compute the distance for all the numeric data; then a dendogram was produced, the method is "ward.D"
+
+The rect.hclust() method was used with k = 3 to highlight the clusters.
+
+```{r hierarchical, echo=FALSE}
+d<-daisy(clusterData,stand=T)
+
+hclus<-hclust(d,method="ward.D")  # notice how balanced the clusters are
+plot(hclus, hang = -1, cex = 0.6)
+rect.hclust(hclus, 2, border = 2:5)
+```
+
+### Clusters Analysis
+
+First, let's see the size of the clusters for k means and k medoid
+
+```{r size, echo=FALSE}
+kmeansize <- kmean$size
+
+kmedoidsize <- kmed$clusinfo
+```
+
+For k means, we have 2 clusters, with size 229 and 271. For k medoids, there are 3 clusters with size 81, 272, 147.
+
+Visually, the k medoids looks like so
+
+```{r k medoid visual, echo=FALSE}
+fviz_cluster(kmed, data = clusterData, geom = "point", ellipse.type = "convex", 
+             ggtheme = theme_bw())
+```
+
+While, the k means give this plot
+
+```{r k means visual, echo=FALSE}
+fviz_cluster(kmean, data = clusterData, geom = "point", ellipse.type = "convex", 
+             ggtheme = theme_bw())
+```
+
+The k medoid cluster plot have some overlap between cluster 1 and 3; while the k means plot produces 2 separate clusters.
+
+The 2 cluster plot share some similarity. Both created cluster 2 with some similar data points. In the k means cluster plot, cluster 2 has some outliers, while cluster 2 in the k medoid plot looks more uniform. 
+
+Let's reduce the k value for k medoid to 2:
+
+```{r lowerkmed, echo = FALSE}
+kmed2 <- pam(clusterData, k = 2)
+fviz_cluster(kmed2, data = clusterData, geom = "point", ellipse.type = "convex", 
+             ggtheme = theme_bw())
+kmedoidsize2 <- kmed2$clusinfo
+```
+There is less overlap with k = 2 for k medoids, so k = 2 is the more optimal value for this method. However, the k means method produce 2 separate clusters, with no overlapping, so it is a bit more optimal than k medoid, with the same k value of 2. With this k value, the sizes of the clusters are 213 and 287.
+
+### K Mean Cluster Intepretation
+
+```{r k mean clusters, echo=FALSE}
+kmeaninfo <- data.frame(kmean$centers, kmean$size)
+kmeaninfo
+```
+
+From the above data frame, cluster 1 represent songs that have high loudness, so they were mixed louder than average, as well as both high acousticness and instrumentalness; and low in valence. This group can be considered as "Loud Angry Songs".
+
+Cluster 2 have songs that are high in speechiness, danceability, and valence. This group can be considered as "Happy Songs To Dance To".
