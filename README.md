@@ -15,7 +15,7 @@ And the OU SACM discord: https://discord.gg/vr3kaHBrSE
 
 All the codes for the workshop are in the `codes` folder. The presentation is in the `presentation` folder.
 
-In the `codes` folder, there are a few additional script that we did not go over during the workshop, feel free to go over them yoursefl!
+In the `codes` folder, there are a few additional script that we did not go over during the workshop, feel free to go over them yourself!
 
 If you have any further questions, feel free to contact me at khoitrinh@ou.edu
 
