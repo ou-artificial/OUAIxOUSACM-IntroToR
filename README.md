@@ -9,6 +9,10 @@ https://posit.co/download/rstudio-desktop/
 
 For more information on K-means clustering, feel free to read this article: https://towardsdatascience.com/understanding-k-means-clustering-in-machine-learning-6a6e67336aa1
 
-Check out our programming partners and friends over at the Student Association for Computing Machinery (SACM)! Here's their discord: https://discord.gg/vr3kaHBrSE 
+Join the OU AI discord here: https://discord.gg/3kyJ7MR8
+
+And the OU SACM discord: https://discord.gg/vr3kaHBrSE 
 
 All the codes for the workshop are in the `codes` folder. The presentation is in the `presentation` folder.
+
+If you have any further questions, feel free to contact me at khoitrinh@ou.edu
