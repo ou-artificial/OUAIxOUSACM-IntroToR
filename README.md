@@ -15,6 +15,8 @@ And the OU SACM discord: https://discord.gg/vr3kaHBrSE
 
 All the codes for the workshop are in the `codes` folder. The presentation is in the `presentation` folder.
 
+In the `codes` folder, there are a few additional script that we did not go over during the workshop, feel free to go over them yoursefl!
+
 If you have any further questions, feel free to contact me at khoitrinh@ou.edu
 
 Or send me a message on Discord @khoiplaysguitar#8491 or instagram [@khoiplaysguitar](https://www.instagram.com/khoiplaysguitar/)
