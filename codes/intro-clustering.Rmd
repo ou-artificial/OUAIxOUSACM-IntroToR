@@ -41,7 +41,9 @@ library(kmed)
 
 ### Data description
 
-The data I chose is my own Spotify streaming history for the past year.
+The data I chose is my own Spotify streaming history for the past year; you can find how to get your own Spotify data [here](https://www.makeuseof.com/tag/download-privacy-data-spotify/)
+
+Then, follow [these instructions](https://github.com/vlad-ds/spoty-records) to obtain the song traits.
 
 ### Misc data processing:
 
