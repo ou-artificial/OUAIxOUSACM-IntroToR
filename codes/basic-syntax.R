@@ -18,6 +18,11 @@ print(a & b) # AND
 print(a | b) # OR
 print(!a) # NOT
 
+# Lists
+mylist <-list(1,2,3,4)
+mylist[1]
+print(mylist)
+
 # Conditional statements
 if (x > 5) {
   print("x is greater than 5")
@@ -45,3 +50,4 @@ my_function <- function(a, b) {
 # Function call
 result <- my_function(x, y)
 print(result)
+
