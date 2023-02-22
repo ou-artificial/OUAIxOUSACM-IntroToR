@@ -19,7 +19,7 @@ print(a | b) # OR
 print(!a) # NOT
 
 # Lists
-mylist <-list(1,2,3,4)
+mylist <-list("khoi",2,TRUE,3.14)
 mylist[1]
 print(mylist)
 
