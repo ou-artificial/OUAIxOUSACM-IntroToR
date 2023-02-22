@@ -55,10 +55,13 @@ spotify = read.csv("final.csv")
 
 The data had almost 60,000 observations, out of those, only the numeric data will be considered.
 
+And out of the numeric columns, we will drop columns 1, 2, 5, 7, 14, and 15 as they are not song traits.
+
 ```{r convert to factor}
 numericData = spotify %>% #Add data
   dplyr::select(where(is.numeric)) #finds where is.numeric is true
-#numericData <- head(numericData, 10000) # gets only 10000 observations
+
+# drop the mentioned columns
 numericData <- subset(numericData, select=-c(1,2,5,7,14,15))
 ```
 
@@ -66,7 +69,9 @@ numericData <- subset(numericData, select=-c(1,2,5,7,14,15))
 
 ### One last data processing step
 
-Scale the data, and use that to create our clusters.
+Scale the data, and use that to create our clusters. We need to scale the data as most of the traits are < 1; but tempo are not
+
+So scaling is needed to not skewed the clusters.
 
 ```{r scale}
 clusterData <- scale(numericData)
@@ -74,7 +79,7 @@ clusterData <- scale(numericData)
 
 ### K means
 
-For this clustering method, the kmeans() function from the stats package is used. Let's start with 2 clusters. Normally, there are ways to determine an optimal number of clusters, but for the sake of simplicity, let's stick to 2, maybe we can change it later.
+For this clustering method, the `kmeans()` function from the stats package is used. Let's start with 2 clusters. Normally, there are ways to determine an optimal number of clusters, but for the sake of simplicity, let's stick to 2, maybe we can change it later.
 
 ```{r k mean}
 kmean <- kmeans(clusterData,2, nstart=10)
@@ -91,7 +96,7 @@ kmeansize
 
 We have 2 clusters, with size 36053 and 20157. 
 
-Visually, the clusters look like so
+Visually, the clusters look like so. We can see that the clusters have a little bit of overlap, but overall, it looks good.
 
 ```{r k means visual}
 fviz_cluster(kmean, data = clusterData, geom = "point", ellipse.type = "convex", 
@@ -125,6 +130,14 @@ valence — whether the track sounds happy or sad
 
 tempo — the bpm
 
+We can see that cluster 1 have songs that are mixed louder, have higher energy and liveness, but lower valence
+
+Maybe we can call this cluster "Sad Workout Songs"? 
+
+Cluster 2 have songs that are higher in valence, acousticness, danceability, but lower energy(?)
+
+Maybe we can call this cluster "Happy Coffehouse Acoustic Songs To Dance To"???
+
 Let's increase the number of clusters, to see if we get any more clear separation.
 
 ```{r k mean redux}
@@ -140,3 +153,5 @@ fviz_cluster(kmean2, data = clusterData, geom = "point", ellipse.type = "convex"
 kmeaninfo2 <- data.frame(kmean2$centers, kmean2$size)
 kmeaninfo2
 ```
+
+We can do the same analysis as with the 2 clusters. See if you can try it for yourself!
