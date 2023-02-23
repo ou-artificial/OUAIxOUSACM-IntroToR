@@ -29,6 +29,7 @@ Note that you can and should run these above commands in the RStudio console
 
 # Let's Explore Clustering
 
+
 ```{r libraries, warning=FALSE, message=FALSE}
 library(cluster)
 library(NbClust)
@@ -51,18 +52,22 @@ Read in the data
 
 ```{r load data}
 spotify = read.csv("final.csv")
+# drop columns to help us find only unique songs
+spotify= subset(spotify, select=-c(1,3,6,7))
+# now get only unique songs
+spotify=unique(spotify)
 ```
 
-The data had almost 60,000 observations, out of those, only the numeric data will be considered.
+The data had almost 2500 observations, out of those, only the numeric data will be considered.
 
-And out of the numeric columns, we will drop columns 1, 2, 5, 7, 14, and 15 as they are not song traits.
+And out of the numeric columns, we will drop columns 3,5,12,13 as they are not song traits.
 
 ```{r convert to factor}
 numericData = spotify %>% #Add data
   dplyr::select(where(is.numeric)) #finds where is.numeric is true
 
 # drop the mentioned columns
-numericData <- subset(numericData, select=-c(1,2,5,7,14,15))
+numericData <- subset(numericData, select=-c(3,5,12,13))
 ```
 
 ## Time To Create Some Clusters
@@ -94,7 +99,7 @@ kmeansize <- kmean$size
 kmeansize
 ```
 
-We have 2 clusters, with size 36053 and 20157. 
+We have 2 clusters, with size 2287 and 158. 
 
 Visually, the clusters look like so. We can see that the clusters have a little bit of overlap, but overall, it looks good.
 
@@ -128,11 +133,11 @@ Tempo: The overall estimated tempo of a track in beats per minute (BPM). In musi
 
 Valence: A measure from 0.0 to 1.0 describing the musical positiveness conveyed by a track. Tracks with high valence sound more positive (e.g. happy, cheerful, euphoric), while tracks with low valence sound more negative (e.g. sad, depressed, angry).
 
-We can see that cluster 1 have songs that are mixed louder, have higher energy and liveness, but lower valence
+We can see that cluster 2 have songs that are mixed louder, have higher energy and liveness, but lower valence
 
 Maybe we can call this cluster "Sad Workout Songs"? 
 
-Cluster 2 have songs that are higher in valence, acousticness, danceability, but lower energy(?)
+Cluster 1 have songs that are higher in valence, acousticness, danceability, but lower energy(?)
 
 Maybe we can call this cluster "Happy Coffehouse Acoustic Songs To Dance To"???
 
